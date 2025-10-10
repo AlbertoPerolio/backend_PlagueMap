@@ -18,19 +18,21 @@ export function verifyToken(token) {
 export const checkToken = {
   confToken(req, id) {
     if (id === 0) return null; // permite la creación de un usuario
-    const decrypted = decryptHeader(req); // decodifica y asigna req.user
-    return decrypted;
+
+    try {
+      const decrypted = decryptHeader(req); // decodifica y asigna req.user
+      return decrypted;
+    } catch (err) {
+      // Si el token no existe o es inválido
+      return null;
+    }
   },
 };
 
 // --- Extrae token del header ---
 function getToken(authHeader) {
-  if (!authHeader) {
-    throw createError("No hay token", 401);
-  }
-  if (!authHeader.includes("Bearer")) {
-    throw createError("Formato invalido", 401);
-  }
+  if (!authHeader) return null; // No hay token
+  if (!authHeader.includes("Bearer")) return null; // Formato inválido
   return authHeader.replace("Bearer", "").trim();
 }
 
@@ -38,8 +40,9 @@ function getToken(authHeader) {
 function decryptHeader(req) {
   const authHeader = req.headers.authorization || "";
   const token = getToken(authHeader);
-  const decrypted = verifyToken(token);
+  if (!token) throw createError("No hay token", 401);
 
+  const decrypted = verifyToken(token);
   req.user = decrypted; // deja la info del usuario disponible
   return decrypted;
 }
