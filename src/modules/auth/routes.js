@@ -10,33 +10,36 @@ const router = express.Router();
 // Función auxiliar para React Native: obtiene el token del header
 function getTokenFromHeader(req) {
   const authHeader = req.headers.authorization || "";
+  // Busca 'Bearer ' y extrae el resto
   if (authHeader.startsWith("Bearer ")) {
     return authHeader.substring(7).trim();
   }
   return null;
 }
 
-// RUTA DE LOGIN
+// RUTA DE LOGIN (Usamos la versión corregida de la sesión anterior)
 router.post("/login", validateSchema(loginSchema), async (req, res) => {
   try {
     const token = await controller.login(req.body.user, req.body.password);
+
+    // Decodificar el token para obtener el objeto 'user'
     const decodedUser = jwt.verify(token, config.jwt.secret);
 
     const isProduction = process.env.NODE_ENV === "production";
 
-    // Configuración de la Cookie
+    // Configuración de la Cookie (para la Web App)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: isProduction, // HTTPS en producción
+      secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
     });
 
-    // Devuelve token y user
+    // Se envía el token Y EL OBJETO USER en el body (para la App Móvil)
     res.json({
       error: false,
       body: { mensaje: "Login exitoso" },
       token,
-      user: decodedUser,
+      user: decodedUser, // Incluir el objeto de usuario decodificado
     });
   } catch (err) {
     res
@@ -45,36 +48,41 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
   }
 });
 
-// RUTA DE VERIFY
+// RUTA DE VERIFY (CRÍTICA PARA EVITAR EL BUCLE)
 router.get("/verify", (req, res) => {
-  let token = getTokenFromHeader(req) || req.cookies.token;
+  // 1. Obtener el token del Authorization Header (Móvil)
+  let token = getTokenFromHeader(req);
 
+  // 2. Si no está en el Header, obtenerlo de la Cookie (Web)
+  if (!token) {
+    token = req.cookies.token;
+  }
+
+  // 3. Si NO hay token, retornar 401
   if (!token) {
     return res
-      .status(401)
+      .status(401) // 🚨 Importante: DEBE ser 401
       .json({ error: true, mensaje: "No se encontró token" });
   }
 
   try {
+    // 4. Verifica y decodifica el token
     const decoded = jwt.verify(token, config.jwt.secret);
+
+    // 5. Devuelve el objeto decodificado como 'user'
+    // El objeto 'decoded' es lo que assignToken firmó, que incluye los datos del usuario.
     res.json({ error: false, user: decoded });
   } catch (err) {
+    // 6. Si el token es inválido/expirado, retornar 401
     res.status(401).json({ error: true, mensaje: "Token inválido" });
   }
 });
 
-// RUTA DE LOGOUT
 router.post("/logout", (req, res) => {
-  const isProduction = process.env.NODE_ENV === "production";
-
   res.cookie("token", "", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    expires: new Date(0), // Expira inmediatamente
+    expires: new Date(0),
   });
-
-  res.json({ mensaje: "Logout exitoso" });
+  res.sendStatus(200);
 });
 
 export default router;
