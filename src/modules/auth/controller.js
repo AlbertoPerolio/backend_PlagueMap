@@ -1,13 +1,12 @@
+// authController.js
 import bcrypt from "bcrypt";
 import RegInf from "../../models/RegInf.js";
 import { assignToken } from "../../authlog/index.js";
 
 export default function authController() {
-  // --- Login de usuario ---
   async function login(identifier, password, res) {
     let user = await RegInf.findOne({ where: { user: identifier } });
     if (!user) user = await RegInf.findOne({ where: { email: identifier } });
-
     if (!user) {
       const error = new Error("El usuario no existe");
       error.statusCode = 404;
@@ -27,12 +26,12 @@ export default function authController() {
       name: user.name,
     });
 
-    // Guardar token en cookie httpOnly
+    // Guardar token en cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
       sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     });
 
     return {
@@ -41,10 +40,9 @@ export default function authController() {
         name: user.name,
         role: user.role,
       },
-      token, // opcional devolverlo también
+      token,
     };
   }
 
-  // Retornamos el objeto con las funciones disponibles
   return { login };
 }

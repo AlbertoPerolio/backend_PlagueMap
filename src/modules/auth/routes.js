@@ -1,8 +1,6 @@
 import express from "express";
 import controller from "./index.js";
 import { validateSchema } from "../../middleware/validator.middleware.js";
-import jwt from "jsonwebtoken";
-import config from "../../config.js";
 import { loginSchema } from "../../schema/auth.schema.js";
 
 const router = express.Router();
@@ -10,82 +8,68 @@ const router = express.Router();
 // Función auxiliar para React Native: obtiene el token del header
 function getTokenFromHeader(req) {
   const authHeader = req.headers.authorization || "";
-  // Busca 'Bearer ' y extrae el resto
   if (authHeader.startsWith("Bearer ")) {
     return authHeader.substring(7).trim();
   }
   return null;
 }
 
-// RUTA DE LOGIN (Usamos la versión corregida de la sesión anterior)
+// --- RUTA LOGIN ---
 router.post("/login", validateSchema(loginSchema), async (req, res) => {
   try {
-    const token = await controller.login(req.body.user, req.body.password);
+    // Pasamos `res` al controlador para que cree la cookie
+    const result = await controller.login(
+      req.body.user,
+      req.body.password,
+      res
+    );
 
-    // Decodificar el token para obtener el objeto 'user'
-    const decodedUser = jwt.verify(token, config.jwt.secret);
-
-    const isProduction = process.env.NODE_ENV === "production";
-
-    // Configuración de la Cookie (para la Web App)
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-    });
-
-    // Se envía el token Y EL OBJETO USER en el body (para la App Móvil)
+    // Devuelve usuario y token en el body (para móvil)
     res.json({
       error: false,
       body: { mensaje: "Login exitoso" },
-      token,
-      user: decodedUser, // Incluir el objeto de usuario decodificado
+      ...result, // { user, token }
     });
   } catch (err) {
-    res
-      .status(err.statusCode || 500)
-      .json({ error: true, body: { mensaje: err.message } });
+    res.status(err.statusCode || 500).json({
+      error: true,
+      body: { mensaje: err.message },
+    });
   }
 });
 
-// RUTA DE VERIFY (CRÍTICA PARA EVITAR EL BUCLE)
+// --- RUTA VERIFY ---
 router.get("/verify", (req, res) => {
-  // 1. Obtener el token del Authorization Header (Móvil)
   let token = getTokenFromHeader(req);
 
-  // 2. Si no está en el Header, obtenerlo de la Cookie (Web)
-  if (!token) {
+  if (!token && req.cookies?.token) {
     token = req.cookies.token;
   }
 
-  // 3. Si NO hay token, retornar 401
   if (!token) {
     return res
-      .status(401) // 🚨 Importante: DEBE ser 401
+      .status(401)
       .json({ error: true, mensaje: "No se encontró token" });
   }
 
   try {
-    // 4. Verifica y decodifica el token
-    const decoded = jwt.verify(token, config.jwt.secret);
-
-    // 5. Devuelve el objeto decodificado como 'user'
-    // El objeto 'decoded' es lo que assignToken firmó, que incluye los datos del usuario.
+    const decoded = controller.verifyToken(token); // Usamos la función del controlador
     res.json({ error: false, user: decoded });
   } catch (err) {
-    // 6. Si el token es inválido/expirado, retornar 401
     res.status(401).json({ error: true, mensaje: "Token inválido" });
   }
 });
 
+// --- RUTA LOGOUT ---
 router.post("/logout", (req, res) => {
   const isProduction = process.env.NODE_ENV === "production";
   res.cookie("token", "", {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    expires: new Date(0),
-  }); // Expira inmediatamente });
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    expires: new Date(0), // Expira inmediatamente
+  });
   res.json({ mensaje: "Logout exitoso" });
 });
+
 export default router;
