@@ -1,0 +1,17 @@
+
+# dependencias
+/node_modules
+
+# archivos de entorno
+.env
+.env.local
+
+# logs de npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# build (si tu backend tiene un paso de compilación)
+/dist
+/build
