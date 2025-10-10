@@ -20,27 +20,32 @@ export const checkToken = {
     if (id === 0) return null; // permite la creación de un usuario
 
     try {
-      const decrypted = decryptHeader(req); // decodifica y asigna req.user
+      const decrypted = decryptToken(req); // decodifica y asigna req.user
       return decrypted;
     } catch (err) {
-      // Si el token no existe o es inválido
-      return null;
+      throw createError("Token inválido", 401);
     }
   },
 };
 
-// --- Extrae token del header ---
-function getToken(authHeader) {
-  if (!authHeader) return null; // No hay token
-  if (!authHeader.includes("Bearer")) return null; // Formato inválido
-  return authHeader.replace("Bearer", "").trim();
-}
-
 // --- Decodifica token y lo asigna a req.user ---
-function decryptHeader(req) {
+function decryptToken(req) {
+  let token = null;
+
+  // 1️⃣ Intentar obtener token del header
   const authHeader = req.headers.authorization || "";
-  const token = getToken(authHeader);
-  if (!token) throw createError("No hay token", 401);
+  if (authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7).trim();
+  }
+
+  // 2️⃣ Si no hay token en header, buscar en cookie
+  if (!token && req.cookies?.token) {
+    token = req.cookies.token;
+  }
+
+  if (!token) {
+    throw createError("No hay token", 401);
+  }
 
   const decrypted = verifyToken(token);
   req.user = decrypted; // deja la info del usuario disponible
