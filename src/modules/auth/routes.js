@@ -79,10 +79,13 @@ router.get("/verify", (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie("token", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
     expires: new Date(0),
-  });
-  res.sendStatus(200);
+  }); // Expira inmediatamente });
+  res.json({ mensaje: "Logout exitoso" });
 });
-
 export default router;
