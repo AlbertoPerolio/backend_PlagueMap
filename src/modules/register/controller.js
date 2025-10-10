@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import RegInf from "../../models/RegInf.js";
 
 export default function registerController() {
@@ -126,8 +125,7 @@ export default function registerController() {
   }
 
   // Función 5: Actualizar solo el rol (updateRole)
-  // Opcionalmente, generar un nuevo token si el usuario cambia su propio rol
-  async function updateRole(id_reg, newRole, currentUser = null) {
+  async function updateRole(id_reg, newRole) {
     if (!["admin", "user"].includes(newRole)) {
       const error = new Error("Rol inválido.");
       error.statusCode = 400;
@@ -145,25 +143,10 @@ export default function registerController() {
       throw error;
     }
 
-    // Generar token si el usuario actualizado es el mismo que está logueado
-    let token = null;
-    if (currentUser && currentUser.id_reg.toString() === id_reg.toString()) {
-      token = jwt.sign(
-        {
-          id_reg: currentUser.id_reg,
-          name: currentUser.name,
-          role: newRole,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" }
-      );
-    }
-
     return {
       id_reg,
       role: newRole,
       mensaje: "Rol de usuario actualizado con éxito.",
-      token, // puede ser null si no aplica
     };
   }
 
