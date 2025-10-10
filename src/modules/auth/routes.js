@@ -22,10 +22,8 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
   try {
     const token = await controller.login(req.body.user, req.body.password);
     const decodedUser = jwt.verify(token, config.jwt.secret);
-
     const isProduction = process.env.NODE_ENV === "production";
 
-    // 🟢 1. Configuración de cookie con duración de 1 día
     res.cookie("token", token, {
       httpOnly: true,
       secure: isProduction,
@@ -33,7 +31,7 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000, // 1 día
     });
 
-    // 🟢 2. Enviar el mensaje y el objeto user (NO el token)
+    // Solo enviar el usuario decodificado
     res.json({
       error: false,
       body: { mensaje: "Login exitoso" },
