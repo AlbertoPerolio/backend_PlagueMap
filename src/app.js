@@ -25,7 +25,15 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // permitir requests sin origin (como Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `La política de CORS no permite el acceso desde este origen: ${origin}`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -36,8 +44,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // --- Puerto ---
-app.set("port", process.env.PORT || config.app.port);
-
+httpServer.listen(app.get("port"), () => {
+  console.log(`Server running on port ${app.get("port")}`);
+});
 // --- Configuración de Socket.IO ---
 const httpServer = createServer(app);
 
