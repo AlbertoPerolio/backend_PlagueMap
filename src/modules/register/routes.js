@@ -67,7 +67,6 @@ async function updateUserRoute(req, res, next) {
     const id_reg = req.params.id;
     const result = await controller.updateUser(id_reg, req.body);
 
-    // result.usuario contiene el usuario actualizado
     return answers.success(req, res, result, 200);
   } catch (err) {
     const statusCode = err.statusCode || 500;
@@ -77,12 +76,28 @@ async function updateUserRoute(req, res, next) {
   }
 }
 
+// ----------------------------
+// UPDATE ROLE ROUTE MODIFICADA
+// ----------------------------
 async function updateRoleRoute(req, res, next) {
   try {
     const id_reg = req.params.id;
     const { role } = req.body;
 
-    const updatedUser = await controller.updateRole(id_reg, role);
+    // Pasamos el usuario logueado al controlador para generar token si aplica
+    const updatedUser = await controller.updateRole(id_reg, role, req.user);
+
+    // Si se generó token, lo enviamos como cookie httpOnly
+    if (updatedUser.token) {
+      res.cookie("token", updatedUser.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+        sameSite: "strict",
+      });
+      delete updatedUser.token; // no enviamos token en el body
+    }
+
     return answers.success(req, res, updatedUser, 200);
   } catch (err) {
     next(err);
