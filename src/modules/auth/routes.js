@@ -21,25 +21,23 @@ function getTokenFromHeader(req) {
 router.post("/login", validateSchema(loginSchema), async (req, res) => {
   try {
     const token = await controller.login(req.body.user, req.body.password);
-
-    // Decodificar el token para obtener el objeto 'user'
     const decodedUser = jwt.verify(token, config.jwt.secret);
 
     const isProduction = process.env.NODE_ENV === "production";
 
-    // Configuración de la Cookie (para la Web App)
+    // 🟢 1. Configuración de cookie con duración de 1 día
     res.cookie("token", token, {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 día
     });
 
-    // Se envía el token Y EL OBJETO USER en el body (para la App Móvil)
+    // 🟢 2. Enviar el mensaje y el objeto user (NO el token)
     res.json({
       error: false,
       body: { mensaje: "Login exitoso" },
-      token,
-      user: decodedUser, // Incluir el objeto de usuario decodificado
+      user: decodedUser,
     });
   } catch (err) {
     res
