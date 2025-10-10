@@ -3,9 +3,11 @@ import RegInf from "../../models/RegInf.js";
 import { assignToken } from "../../authlog/index.js";
 
 export default function authController() {
+  // --- Login de usuario ---
   async function login(identifier, password, res) {
     let user = await RegInf.findOne({ where: { user: identifier } });
     if (!user) user = await RegInf.findOne({ where: { email: identifier } });
+
     if (!user) {
       const error = new Error("El usuario no existe");
       error.statusCode = 404;
@@ -39,6 +41,10 @@ export default function authController() {
         name: user.name,
         role: user.role,
       },
+      token, // opcional devolverlo también
     };
   }
+
+  // Retornamos el objeto con las funciones disponibles
+  return { login };
 }
