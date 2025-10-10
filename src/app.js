@@ -20,7 +20,7 @@ const app = express();
 
 // --- Configuración de CORS ---
 const allowedOrigins = [
-  "https://tu-app.vercel.app", // <-- dominio de Vercel
+  "https://frontend-plaguemap.vercel.app/", // <-- dominio de Vercel
 ];
 
 app.use(
