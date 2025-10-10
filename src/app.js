@@ -1,3 +1,4 @@
+// app.js
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
@@ -19,14 +20,11 @@ await connect();
 const app = express();
 
 // --- Configuración de CORS ---
-const allowedOrigins = [
-  "https://frontend-plaguemap.vercel.app", // <-- dominio de Vercel
-];
+const allowedOrigins = ["https://frontend-plaguemap.vercel.app"];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // permitir requests sin origin (como Postman)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg = `La política de CORS no permite el acceso desde este origen: ${origin}`;
@@ -43,10 +41,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// --- Puerto ---
-httpServer.listen(app.get("port"), () => {
-  console.log(`Server running on port ${app.get("port")}`);
-});
 // --- Configuración de Socket.IO ---
 const httpServer = createServer(app);
 
@@ -59,12 +53,11 @@ const io = new Server(httpServer, {
   },
 });
 
-// Conexiones Socket.IO (logs removidos para producción)
 io.on("connection", (socket) => {
-  // Puedes usar socket.emit aquí si quieres mensajes iniciales
+  // Aquí puedes emitir mensajes iniciales si quieres
 });
 
-// Inyectamos la instancia de io en req para que rutas puedan usarla
+// Inyectamos io en req
 app.use((req, res, next) => {
   req.io = io;
   next();
@@ -78,5 +71,4 @@ app.use("/api", markers);
 // --- Manejo de errores ---
 app.use(error);
 
-// --- Exportar servidor y Socket.IO ---
-export { httpServer, io };
+export { app, httpServer, io };

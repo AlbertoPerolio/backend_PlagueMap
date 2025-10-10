@@ -31,7 +31,7 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
-      sameSite: none,
+      sameSite: "none",
     });
 
     // Se envía el token Y EL OBJETO USER en el body (para la App Móvil)
@@ -84,7 +84,7 @@ router.post("/logout", (req, res) => {
   res.cookie("token", "", {
     httpOnly: true,
     secure: true,
-    sameSite: none,
+    sameSite: "none",
     expires: new Date(0),
   });
 
