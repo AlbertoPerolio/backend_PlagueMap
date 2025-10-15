@@ -15,7 +15,7 @@ export function requireRole(role) {
           mensaje: "No eres administrador ¿Como llegaste a este lugar?",
         });
       }
-      req.user = decoded; // guardamos info del usuario para usarla si hace falta
+      req.user = decoded; // guardamos info del usuario
       next();
     } catch (err) {
       res

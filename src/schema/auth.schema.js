@@ -33,7 +33,6 @@ export const updateUserSchema = z
     currentPassword: z.string().optional(),
   })
   .refine(
-    // 💡 Extra: Validación para asegurar que si se envía una nueva contraseña,
     // también se envía la contraseña actual. Si no se envía 'password', se ignora.
     (data) => {
       if (data.password) {

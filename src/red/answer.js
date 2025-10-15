@@ -3,7 +3,7 @@ export function success(req, res, data = {}, status = 200) {
   res.status(status).send({
     error: false,
     status: status,
-    body: responseData, // <-- CRÍTICO
+    body: responseData,
   });
 }
 
@@ -11,6 +11,6 @@ export function error(req, res, mensaje = "Inside Error", status = 500) {
   res.status(status).send({
     error: true,
     status: status,
-    message: mensaje, // <-- CRÍTICO: Usa 'message' para el error
+    message: mensaje,
   });
 }

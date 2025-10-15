@@ -4,17 +4,17 @@ import createError from "../middleware/errors.js";
 
 const secret = config.jwt.secret;
 
-// --- Genera un token ---
+// Genera un token
 export function assignToken(data) {
   return jwt.sign(data, secret); // token
 }
 
-// --- Verifica un token ---
+// Verifica un token
 export function verifyToken(token) {
   return jwt.verify(token, secret);
 }
 
-// --- Middleware / función de seguridad ---
+// Middleware / función de seguridad
 export const checkToken = {
   confToken(req, id) {
     if (id === 0) return null; // permite la creación de un usuario
@@ -28,17 +28,17 @@ export const checkToken = {
   },
 };
 
-// --- Decodifica token y lo asigna a req.user ---
+// Decodifica token y lo asigna a req.user
 function decryptToken(req) {
   let token = null;
 
-  // 1️⃣ Intentar obtener token del header
+  // Intentar obtener token del header
   const authHeader = req.headers.authorization || "";
   if (authHeader.startsWith("Bearer ")) {
     token = authHeader.substring(7).trim();
   }
 
-  // 2️⃣ Si no hay token en header, buscar en cookie
+  // Si no hay token en header, buscar en cookie
   if (!token && req.cookies?.token) {
     token = req.cookies.token;
   }

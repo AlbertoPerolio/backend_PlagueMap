@@ -16,7 +16,7 @@ export default function checkToken() {
         token = req.cookies.token;
       }
 
-      // Si no hay token en ningún lado, permitir creación de usuario (id_reg = 0)
+      // Si no hay token en ningún lado, permitir creación de usuario
       if (!token) {
         if (req.body?.id_reg === 0) return next();
         throw createError("Token requerido", 401);

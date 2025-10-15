@@ -7,7 +7,6 @@ import { loginSchema } from "../../schema/auth.schema.js";
 
 const router = express.Router();
 
-// Función auxiliar para React Native: obtiene el token del header
 function getTokenFromHeader(req) {
   const authHeader = req.headers.authorization || "";
   // Busca 'Bearer ' y extrae el resto
@@ -17,7 +16,7 @@ function getTokenFromHeader(req) {
   return null;
 }
 
-// RUTA DE LOGIN (Usamos la versión corregida de la sesión anterior)
+// RUTA DE LOGIN
 router.post("/login", validateSchema(loginSchema), async (req, res) => {
   try {
     const token = await controller.login(req.body.user, req.body.password);
@@ -44,12 +43,11 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
   }
 });
 
-// RUTA DE VERIFY (CRÍTICA PARA EVITAR EL BUCLE)
 router.get("/verify", (req, res) => {
-  // 1. Obtener el token del Authorization Header (Móvil)
+  // 1. Obtener el token del Authorization Header (Teléfono)
   let token = getTokenFromHeader(req);
 
-  // 2. Si no está en el Header, obtenerlo de la Cookie (Web)
+  // 2. Si no está en el Header, obtenerlo de la Cookie (Pagina)
   if (!token) {
     token = req.cookies.token;
   }
@@ -57,7 +55,7 @@ router.get("/verify", (req, res) => {
   // 3. Si NO hay token, retornar 401
   if (!token) {
     return res
-      .status(401) // 🚨 Importante: DEBE ser 401
+      .status(401)
       .json({ error: true, mensaje: "No se encontró token" });
   }
 
@@ -66,7 +64,6 @@ router.get("/verify", (req, res) => {
     const decoded = jwt.verify(token, config.jwt.secret);
 
     // 5. Devuelve el objeto decodificado como 'user'
-    // El objeto 'decoded' es lo que assignToken firmó, que incluye los datos del usuario.
     res.json({ error: false, user: decoded });
   } catch (err) {
     // 6. Si el token es inválido/expirado, retornar 401

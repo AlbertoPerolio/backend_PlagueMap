@@ -17,7 +17,7 @@ const PlagueReport = sequelize.define(
         model: RegInf,
         key: "id_reg",
       },
-      onDelete: "CASCADE", // elimina reportes si el usuario se elimina
+      onDelete: "CASCADE",
       onUpdate: "CASCADE",
     },
     title: {

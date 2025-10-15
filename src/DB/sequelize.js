@@ -7,13 +7,13 @@ const sequelize = new Sequelize(
   config.mysql.password,
   {
     host: config.mysql.host,
-    port: config.mysql.port, // <-- usar el puerto del config
+    port: config.mysql.port,
     dialect: "mysql",
     logging: false,
     dialectOptions: {
       ssl: {
         require: true, // SSL obligatorio para Aiven
-        rejectUnauthorized: false, // evita errores de certificado
+        rejectUnauthorized: false,
       },
     },
   }

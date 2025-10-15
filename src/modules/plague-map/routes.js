@@ -21,12 +21,12 @@ router.post(
   "/markers",
   upload.single("image"),
   (req, res, next) => {
-    next(); // Pasa al siguiente middleware (createMarker)
+    next(); // Pasa al siguiente middleware
   },
   createMarker
 );
 
-// ✅ Ruta para ACTUALIZAR un marcador:
+// Ruta para ACTUALIZAR un marcador:
 router.put(
   "/markers/:idplague",
   checkToken(), // <-- AGREGAR
@@ -37,12 +37,12 @@ router.put(
 
 router.delete(
   "/markers/:idplague",
-  checkToken(), // <-- AGREGAR
+  checkToken(),
   checkOwnershipOrAdmin(),
   deleteMarker
 );
 
-// ✅ Ruta para APROBAR un marcador:
+// Ruta para APROBAR un marcador:
 router.put(
   "/markers/:idplague/approve",
   checkToken(),

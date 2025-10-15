@@ -9,10 +9,10 @@ const checkOwnershipOrAdmin = () => async (req, res, next) => {
       throw createError("Token no proporcionado", 401);
     }
 
-    // 1️⃣ Si es admin, acceso inmediato
+    //  Si es admin, acceso inmediato
     if (decoded.role === "admin") return next();
 
-    // 2️⃣ Verificación de ID de usuario (para rutas /api/users/:id)
+    //  Verificación de ID de usuario (para rutas /api/users/:id)
     if (
       req.params.id &&
       parseInt(req.params.id, 10) === parseInt(decoded.id_reg, 10)
@@ -20,7 +20,7 @@ const checkOwnershipOrAdmin = () => async (req, res, next) => {
       return next();
     }
 
-    // 3️⃣ Verificación de ID de marcador (para rutas /api/markers/:idplague)
+    //  Verificación de ID de marcador (para rutas /api/markers/:idplague)
     if (req.params.idplague) {
       const marker = await PlagueReport.findByPk(req.params.idplague);
       if (!marker) throw createError("Marcador no encontrado", 404);
@@ -29,7 +29,7 @@ const checkOwnershipOrAdmin = () => async (req, res, next) => {
       }
     }
 
-    // 4️⃣ Si no es admin y no es dueño, denegar acceso
+    // Si no es admin y no es dueño, denegar acceso
     throw createError("No tienes privilegios para realizar esta acción", 403);
   } catch (err) {
     const statusCode = err.statusCode || 500;

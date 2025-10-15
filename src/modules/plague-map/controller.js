@@ -1,10 +1,7 @@
-import PlagueReport from "../../models/plague_report.js"; // Se mantiene tu importación original
-import { uploadImageToCloudinary } from "../../utils/cloudinary.js"; // Se mantiene tu importación original
+import PlagueReport from "../../models/plague_report.js";
+import { uploadImageToCloudinary } from "../../utils/cloudinary.js";
 import fs from "fs";
 
-// ==========================================================
-// 1. CREAR MARCADOR (POST /markers)
-// ==========================================================
 export const createMarker = async (req, res, next) => {
   try {
     const { title, description, id_reg, status, lat, lng } = req.body;
@@ -38,8 +35,7 @@ export const createMarker = async (req, res, next) => {
       lng: parseFloat(lng),
     });
 
-    // 🚀 EMITIR SOCKET: Notifica que un marcador fue creado
-    // req.io se inyecta desde tu app.js
+    // req.io se inyecta desde app.js
     req.io.emit("plague_report_update", {
       action: "created",
       marker: newMarker.toJSON(),
@@ -54,9 +50,6 @@ export const createMarker = async (req, res, next) => {
   }
 };
 
-// ==========================================================
-// 2. OBTENER TODOS LOS MARCADORES (GET /markers)
-// ==========================================================
 export const getAllMarkers = async (req, res, next) => {
   try {
     const markers = await PlagueReport.findAll();
@@ -66,9 +59,6 @@ export const getAllMarkers = async (req, res, next) => {
   }
 };
 
-// ==========================================================
-// 3. ACTUALIZAR MARCADOR (PUT /markers/:idplague)
-// ==========================================================
 export const updateMarker = async (req, res, next) => {
   try {
     const { idplague } = req.params;
@@ -78,8 +68,6 @@ export const updateMarker = async (req, res, next) => {
     if (!marker) {
       return res.status(404).json({ message: "Marker not found" });
     }
-
-    // Se asume que la lógica de autorización viene de un middleware
 
     let updateData = {
       title,
@@ -102,7 +90,7 @@ export const updateMarker = async (req, res, next) => {
     // Actualiza el marcador
     await marker.update(updateData);
 
-    // 🚀 EMITIR SOCKET: Notifica que el marcador fue actualizado
+    // Notifica que el marcador fue actualizado
     req.io.emit("plague_report_update", {
       action: "updated",
       marker: marker.toJSON(),
@@ -117,9 +105,6 @@ export const updateMarker = async (req, res, next) => {
   }
 };
 
-// ==========================================================
-// 4. ELIMINAR MARCADOR (DELETE /markers/:idplague)
-// ==========================================================
 export const deleteMarker = async (req, res, next) => {
   try {
     const { idplague } = req.params;
@@ -131,7 +116,7 @@ export const deleteMarker = async (req, res, next) => {
 
     await marker.destroy();
 
-    // 🚀 EMITIR SOCKET: Notifica que el marcador fue eliminado
+    //  Notifica que el marcador fue eliminado
     req.io.emit("plague_report_update", {
       action: "deleted",
       idplague: Number(idplague),
@@ -143,9 +128,6 @@ export const deleteMarker = async (req, res, next) => {
   }
 };
 
-// ==========================================================
-// 5. APROBAR MARCADOR (PUT /markers/:idplague/approve)
-// ==========================================================
 export const approveMarker = async (req, res, next) => {
   try {
     const { idplague } = req.params;
@@ -158,7 +140,7 @@ export const approveMarker = async (req, res, next) => {
     marker.status = "aprobado";
     await marker.save();
 
-    // 🚀 EMITIR SOCKET: Notifica que el estado cambió a 'aprobado'
+    // Notifica que el estado cambió a 'aprobado'
     req.io.emit("plague_report_update", {
       action: "approved",
       marker: marker.toJSON(),
