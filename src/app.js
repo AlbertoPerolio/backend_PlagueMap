@@ -20,9 +20,7 @@ await connect();
 const app = express();
 
 // --- Configuración de CORS ---
-const allowedOrigins = [
-  "https://frontend-plaguemap-rc1cmekm3-albertos-projects-93e81fca.vercel.app/",
-];
+const allowedOrigins = ["https://frontend-plaguemap.vercel.app/"];
 
 app.use(
   cors({
